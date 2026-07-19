@@ -1392,6 +1392,988 @@ export function BentoProfileCard({
       },
     ],
   },
+
+  {
+    slug: "order-history-table",
+    name: "Order History Table",
+    description: "Compact order listing with status badges and amount formatting.",
+    category: "table",
+    tags: ["orders", "status", "compact"],
+    bento_size: "2x2",
+    sort_order: 15,
+    customizer_schema: {
+      params: [
+        {
+          key: "accent_color",
+          label: "Accent Color",
+          type: "color_picker",
+          default: "#A31D1D",
+          palette: ["#A31D1D", "#1D3A8A", "#1D8A4A", "#8A6A1D"],
+        },
+        {
+          key: "show_status",
+          label: "Show Status Badge",
+          type: "toggle_switch",
+          default: true,
+        },
+      ],
+    },
+    random_data_schema: {
+      columns: [
+        { name: "Order ID", type: "string" },
+        { name: "Customer", type: "string" },
+        { name: "Amount", type: "number" },
+        { name: "Status", type: "string" },
+        { name: "Date", type: "date" },
+      ],
+      row_count: { min: 10, max: 20 },
+    },
+    variants: [
+      {
+        language: "html",
+        display_order: 1,
+        code_template: `<table class="w-full border-collapse" style="font-size: 0.875rem;">
+  <thead>
+    <tr class="text-left text-xs text-secondary border-b border-default">
+      <th class="py-2 px-3 font-medium">Order ID</th>
+      <th class="py-2 px-3 font-medium">Customer</th>
+      <th class="py-2 px-3 font-medium text-right">Amount</th>
+      <th class="py-2 px-3 font-medium">Status</th>
+      <th class="py-2 px-3 font-medium">Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each rows}}
+    <tr class="border-b border-default hover:bg-[#1E222B] transition-colors duration-75">
+      <td class="py-2 px-3 text-primary">{{this.Order_ID}}</td>
+      <td class="py-2 px-3 text-primary">{{this.Customer}}</td>
+      <td class="py-2 px-3 text-right text-primary">\${this.Amount}</td>
+      {{#if ../show_status}}
+      <td class="py-2 px-3"><span class="text-xs px-1.5 py-0.5 border" style="border-color: {{../accent_color}}; color: {{../accent_color}};">{{this.Status}}</span></td>
+      {{/if}}
+      <td class="py-2 px-3 text-secondary">{{this.Date}}</td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>`,
+      },
+      {
+        language: "react-tsx",
+        display_order: 2,
+        code_template: `interface Order {
+  orderId: string;
+  customer: string;
+  amount: number;
+  status: string;
+  date: string;
+}
+
+interface OrderHistoryTableProps {
+  orders?: Order[];
+  accentColor?: string;
+  showStatus?: boolean;
+}
+
+export function OrderHistoryTable({
+  orders = [],
+  accentColor = '{{accent_color}}',
+  showStatus = {{show_status}},
+}: OrderHistoryTableProps) {
+  return (
+    <table className="w-full border-collapse" style={{ fontSize: '0.875rem' }}>
+      <thead>
+        <tr className="text-left text-xs text-secondary border-b border-default">
+          <th className="py-2 px-3 font-medium">Order ID</th>
+          <th className="py-2 px-3 font-medium">Customer</th>
+          <th className="py-2 px-3 font-medium text-right">Amount</th>
+          <th className="py-2 px-3 font-medium">Status</th>
+          <th className="py-2 px-3 font-medium">Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {orders.map((order, i) => (
+          <tr key={i} className="border-b border-default hover:bg-[#1E222B] transition-colors duration-75">
+            <td className="py-2 px-3 text-primary">{order.orderId}</td>
+            <td className="py-2 px-3 text-primary">{order.customer}</td>
+            <td className="py-2 px-3 text-right text-primary">\${order.amount}</td>
+            {showStatus && (
+              <td className="py-2 px-3">
+                <span className="text-xs px-1.5 py-0.5 border" style={{ borderColor: accentColor, color: accentColor }}>
+                  {order.status}
+                </span>
+              </td>
+            )}
+            <td className="py-2 px-3 text-secondary">{order.date}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}`,
+      },
+    ],
+  },
+
+  {
+    slug: "area-chart",
+    name: "Area Chart",
+    description: "Smooth area chart with gradient fill for trend visualization.",
+    category: "chart",
+    tags: ["area", "trend", "gradient"],
+    bento_size: "2x1",
+    sort_order: 35,
+    customizer_schema: {
+      params: [
+        {
+          key: "accent_color",
+          label: "Area Color",
+          type: "color_picker",
+          default: "#1D8A4A",
+          palette: ["#1D8A4A", "#A31D1D", "#1D3A8A", "#8A6A1D"],
+        },
+        {
+          key: "line_width",
+          label: "Line Width (px)",
+          type: "range_slider",
+          default: 2,
+          min: 1,
+          max: 4,
+          step: 1,
+        },
+        { key: "show_points", label: "Show Data Points", type: "toggle_switch", default: true },
+        { key: "smooth_curve", label: "Smooth Curve", type: "toggle_switch", default: true },
+      ],
+    },
+    random_data_schema: {
+      data_type: "time_series",
+      points: { min: 8, max: 20 },
+    },
+    variants: [
+      {
+        language: "html",
+        display_order: 1,
+        code_template: `<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto">
+  <defs>
+    <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="{{accent_color}}" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="{{accent_color}}" stop-opacity="0.02"/>
+    </linearGradient>
+  </defs>
+  {{#each points}}
+  <polyline points="{{#each ../points}}{{this.x}},{{this.y}} {{/each}}"
+    fill="none" stroke="{{../accent_color}}" stroke-width="{{../line_width}}"
+    stroke-linejoin="{{#if ../smooth_curve}}round{{else}}miter{{/if}}"
+    stroke-linecap="{{#if ../smooth_curve}}round{{else}}butt{{/if}}" />
+  <path d="M{{#each ../points}}{{this.x}},{{this.y}} L{{/each}}{{#last ../points}}{{this.x}},200 L{{#first ../points}}{{this.x}},200 Z{{/first}}{{/last}}"
+    fill="url(#areaGrad)" />
+  {{/each}}
+  {{#if show_points}}
+  {{#each points}}
+  <circle cx="{{this.x}}" cy="{{this.y}}" r="3" fill="{{../accent_color}}" stroke="#16181D" stroke-width="1.5"/>
+  {{/each}}
+  {{/if}}
+</svg>`,
+      },
+      {
+        language: "react-tsx",
+        display_order: 2,
+        code_template: `interface AreaChartProps {
+  data?: { x: number; y: number }[];
+  accentColor?: string;
+  lineWidth?: number;
+  showPoints?: boolean;
+  smoothCurve?: boolean;
+}
+
+export function AreaChart({
+  data = [],
+  accentColor = '{{accent_color}}',
+  lineWidth = {{line_width}},
+  showPoints = {{show_points}},
+  smoothCurve = {{smooth_curve}},
+}: AreaChartProps) {
+  const pathD = data.map((d, i) => \`\${i === 0 ? 'M' : 'L'}\${d.x},\${d.y}\`).join(' ');
+  const areaD = pathD + ' L' + (data[data.length - 1]?.x ?? 0) + ',200 L' + (data[0]?.x ?? 0) + ',200 Z';
+
+  return (
+    <svg viewBox="0 0 400 200" className="w-full h-auto">
+      <defs>
+        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={accentColor} stopOpacity={0.25} />
+          <stop offset="100%" stopColor={accentColor} stopOpacity={0.02} />
+        </linearGradient>
+      </defs>
+      <path d={pathD} fill="none" stroke={accentColor} strokeWidth={lineWidth}
+        strokeLinejoin={smoothCurve ? 'round' : 'miter'}
+        strokeLinecap={smoothCurve ? 'round' : 'butt'} />
+      <path d={areaD} fill="url(#areaGrad)" />
+      {showPoints && data.map((d, i) => (
+        <circle key={i} cx={d.x} cy={d.y} r={3} fill={accentColor} stroke="#16181D" strokeWidth={1.5} />
+      ))}
+    </svg>
+  );
+}`,
+      },
+    ],
+  },
+
+  {
+    slug: "scatter-chart",
+    name: "Scatter Plot",
+    description: "Scatter plot for correlation and distribution analysis.",
+    category: "chart",
+    tags: ["scatter", "distribution", "correlation"],
+    bento_size: "2x1",
+    sort_order: 40,
+    customizer_schema: {
+      params: [
+        {
+          key: "accent_color",
+          label: "Point Color",
+          type: "color_picker",
+          default: "#1D3A8A",
+          palette: ["#1D3A8A", "#A31D1D", "#1D8A4A", "#8A6A1D"],
+        },
+        {
+          key: "point_size",
+          label: "Point Size",
+          type: "range_slider",
+          default: 5,
+          min: 3,
+          max: 10,
+          step: 1,
+        },
+        { key: "show_grid", label: "Show Grid", type: "toggle_switch", default: true },
+      ],
+    },
+    random_data_schema: {
+      data_type: "categorical",
+      points: { min: 12, max: 30 },
+    },
+    variants: [
+      {
+        language: "html",
+        display_order: 1,
+        code_template: `<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto">
+  {{#if show_grid}}
+  <line x1="40" y1="20" x2="40" y2="180" stroke="#262930" stroke-width="1"/>
+  <line x1="40" y1="180" x2="380" y2="180" stroke="#262930" stroke-width="1"/>
+  {{/if}}
+  {{#each points}}
+  <circle cx="{{this.x}}" cy="{{this.y}}" r="{{../point_size}}"
+    fill="{{../accent_color}}" fill-opacity="0.7" stroke="{{../accent_color}}" stroke-width="1"/>
+  {{/each}}
+</svg>`,
+      },
+      {
+        language: "react-tsx",
+        display_order: 2,
+        code_template: `interface ScatterPlotProps {
+  data?: { x: number; y: number }[];
+  accentColor?: string;
+  pointSize?: number;
+  showGrid?: boolean;
+}
+
+export function ScatterPlot({
+  data = [],
+  accentColor = '{{accent_color}}',
+  pointSize = {{point_size}},
+  showGrid = {{show_grid}},
+}: ScatterPlotProps) {
+  return (
+    <svg viewBox="0 0 400 200" className="w-full h-auto">
+      {showGrid && (
+        <>
+          <line x1={40} y1={20} x2={40} y2={180} stroke="#262930" strokeWidth={1} />
+          <line x1={40} y1={180} x2={380} y2={180} stroke="#262930" strokeWidth={1} />
+        </>
+      )}
+      {data.map((d, i) => (
+        <circle key={i} cx={d.x} cy={d.y} r={pointSize}
+          fill={accentColor} fillOpacity={0.7} stroke={accentColor} strokeWidth={1} />
+      ))}
+    </svg>
+  );
+}`,
+      },
+    ],
+  },
+
+  {
+    slug: "tab-navigation",
+    name: "Tab Navigation",
+    description: "Horizontal tab bar with active indicator and hover states.",
+    category: "navigation",
+    tags: ["tabs", "horizontal", "active"],
+    bento_size: "2x1",
+    sort_order: 65,
+    customizer_schema: {
+      params: [
+        {
+          key: "accent_color",
+          label: "Active Tab Color",
+          type: "color_picker",
+          default: "#A31D1D",
+          palette: ["#A31D1D", "#1D3A8A", "#1D8A4A", "#8A6A1D"],
+        },
+        { key: "show_border_bottom", label: "Show Border", type: "toggle_switch", default: true },
+        {
+          key: "tab_count",
+          label: "Number of Tabs",
+          type: "range_slider",
+          default: 4,
+          min: 2,
+          max: 6,
+          step: 1,
+        },
+        {
+          key: "active_tab",
+          label: "Active Tab Index",
+          type: "range_slider",
+          default: 0,
+          min: 0,
+          max: 5,
+          step: 1,
+        },
+      ],
+    },
+    variants: [
+      {
+        language: "html",
+        display_order: 1,
+        code_template: `<div class="flex" style="{{#if show_border_bottom}}border-bottom: 1px solid #262930;{{/if}}">
+  <button class="px-4 py-2 text-sm transition-colors duration-75"
+    style="color: {{#if active_tab === 0}}{{accent_color}}{{else}}#9A9BA0{{/if}};
+    {{#if active_tab === 0}}border-bottom: 2px solid {{accent_color}};{{/if}}
+    {{#if show_border_bottom}}margin-bottom: -1px;{{/if}}">
+    Overview
+  </button>
+  <button class="px-4 py-2 text-sm transition-colors duration-75"
+    style="color: {{#if active_tab === 1}}{{accent_color}}{{else}}#9A9BA0{{/if}};
+    {{#if active_tab === 1}}border-bottom: 2px solid {{accent_color}};{{/if}}">
+    Analytics
+  </button>
+  <button class="px-4 py-2 text-sm transition-colors duration-75"
+    style="color: {{#if active_tab === 2}}{{accent_color}}{{else}}#9A9BA0{{/if}};
+    {{#if active_tab === 2}}border-bottom: 2px solid {{accent_color}};{{/if}}">
+    Settings
+  </button>
+</div>`,
+      },
+      {
+        language: "react-tsx",
+        display_order: 2,
+        code_template: `interface Tab {
+  label: string;
+  value: string;
+}
+
+interface TabNavigationProps {
+  tabs?: Tab[];
+  activeIndex?: number;
+  accentColor?: string;
+  showBorderBottom?: boolean;
+}
+
+export function TabNavigation({
+  tabs = [
+    { label: 'Overview', value: 'overview' },
+    { label: 'Analytics', value: 'analytics' },
+    { label: 'Settings', value: 'settings' },
+  ],
+  activeIndex = {{active_tab}},
+  accentColor = '{{accent_color}}',
+  showBorderBottom = {{show_border_bottom}},
+}: TabNavigationProps) {
+  return (
+    <div className="flex" style={showBorderBottom ? { borderBottom: '1px solid #262930' } : undefined}>
+      {tabs.map((tab, i) => (
+        <button
+          key={tab.value}
+          className="px-4 py-2 text-sm transition-colors duration-75"
+          style={{
+            color: i === activeIndex ? accentColor : '#9A9BA0',
+            borderBottom: i === activeIndex ? \`2px solid \${accentColor}\` : '2px solid transparent',
+            marginBottom: showBorderBottom ? -1 : 0,
+          }}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+}`,
+      },
+    ],
+  },
+
+  {
+    slug: "pagination-nav",
+    name: "Pagination",
+    description: "Page navigation controls with prev/next and page numbers.",
+    category: "navigation",
+    tags: ["pagination", "pages", "navigation"],
+    bento_size: "2x1",
+    sort_order: 70,
+    customizer_schema: {
+      params: [
+        {
+          key: "accent_color",
+          label: "Active Page Color",
+          type: "color_picker",
+          default: "#A31D1D",
+          palette: ["#A31D1D", "#1D3A8A", "#1D8A4A", "#8A6A1D"],
+        },
+        {
+          key: "total_pages",
+          label: "Total Pages",
+          type: "range_slider",
+          default: 5,
+          min: 3,
+          max: 10,
+          step: 1,
+        },
+        {
+          key: "current_page",
+          label: "Current Page",
+          type: "range_slider",
+          default: 1,
+          min: 1,
+          max: 10,
+          step: 1,
+        },
+        { key: "show_prev_next", label: "Show Prev/Next", type: "toggle_switch", default: true },
+      ],
+    },
+    variants: [
+      {
+        language: "html",
+        display_order: 1,
+        code_template: `<nav class="flex items-center gap-1">
+  {{#if show_prev_next}}
+  <button class="px-2 py-1 text-xs border border-default text-secondary hover:text-primary hover:border-accent transition-colors duration-75">Prev</button>
+  {{/if}}
+  {{#each (range total_pages)}}
+  <button class="w-7 h-7 text-xs transition-colors duration-75"
+    style="background: {{#if this === current_page}}{{accent_color}}{{else}}transparent{{/if}};
+           color: {{#if this === current_page}}#E8E9ED{{else}}#9A9BA0{{/if}};
+           border: {{#if this === current_page}}none{{else}}1px solid #262930{{/if}};">
+    {{this}}
+  </button>
+  {{/each}}
+  {{#if show_prev_next}}
+  <button class="px-2 py-1 text-xs border border-default text-secondary hover:text-primary hover:border-accent transition-colors duration-75">Next</button>
+  {{/if}}
+</nav>`,
+      },
+      {
+        language: "react-tsx",
+        display_order: 2,
+        code_template: `interface PaginationProps {
+  totalPages?: number;
+  currentPage?: number;
+  accentColor?: string;
+  showPrevNext?: boolean;
+}
+
+export function Pagination({
+  totalPages = {{total_pages}},
+  currentPage = {{current_page}},
+  accentColor = '{{accent_color}}',
+  showPrevNext = {{show_prev_next}},
+}: PaginationProps) {
+  return (
+    <nav className="flex items-center gap-1">
+      {showPrevNext && (
+        <button className="px-2 py-1 text-xs border border-default text-secondary hover:text-primary hover:border-accent transition-colors duration-75">
+          Prev
+        </button>
+      )}
+      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+        <button
+          key={page}
+          className="w-7 h-7 text-xs transition-colors duration-75"
+          style={{
+            background: page === currentPage ? accentColor : 'transparent',
+            color: page === currentPage ? '#E8E9ED' : '#9A9BA0',
+            border: page === currentPage ? 'none' : '1px solid #262930',
+          }}
+        >
+          {page}
+        </button>
+      ))}
+      {showPrevNext && (
+        <button className="px-2 py-1 text-xs border border-default text-secondary hover:text-primary hover:border-accent transition-colors duration-75">
+          Next
+        </button>
+      )}
+    </nav>
+  );
+}`,
+      },
+    ],
+  },
+
+  {
+    slug: "bento-kanban-card",
+    name: "Bento Kanban Card",
+    description: "Task card with title, description, assignee, and priority label.",
+    category: "bento",
+    tags: ["kanban", "task", "card"],
+    bento_size: "1x1",
+    sort_order: 115,
+    customizer_schema: {
+      params: [
+        {
+          key: "accent_color",
+          label: "Priority Color",
+          type: "color_picker",
+          default: "#8A6A1D",
+          palette: ["#8A6A1D", "#A31D1D", "#1D3A8A", "#1D8A4A"],
+        },
+        {
+          key: "show_assignee",
+          label: "Show Assignee",
+          type: "toggle_switch",
+          default: true,
+        },
+        {
+          key: "show_description",
+          label: "Show Description",
+          type: "toggle_switch",
+          default: true,
+        },
+      ],
+    },
+    variants: [
+      {
+        language: "html",
+        display_order: 1,
+        code_template: `<div class="bg-card border border-default p-3">
+  <div class="flex items-center justify-between mb-2">
+    <span class="text-xs px-1.5 py-0.5 border" style="border-color: {{accent_color}}; color: {{accent_color}};">High Priority</span>
+  </div>
+  <h4 class="text-sm font-semibold text-primary">Implement Auth Flow</h4>
+  {{#if show_description}}
+  <p class="text-xs text-secondary mt-1">Set up OAuth with Google and GitHub providers.</p>
+  {{/if}}
+  {{#if show_assignee}}
+  <div class="flex items-center gap-2 mt-3 pt-2 border-t border-default">
+    <div class="w-5 h-5 bg-[#1E222B] border border-default flex items-center justify-center text-[10px] font-bold" style="color: {{accent_color}};">JD</div>
+    <span class="text-xs text-secondary">Jane Doe</span>
+  </div>
+  {{/if}}
+</div>`,
+      },
+      {
+        language: "react-tsx",
+        display_order: 2,
+        code_template: `interface KanbanCardProps {
+  title?: string;
+  description?: string;
+  priority?: string;
+  assigneeName?: string;
+  assigneeInitials?: string;
+  accentColor?: string;
+  showAssignee?: boolean;
+  showDescription?: boolean;
+}
+
+export function BentoKanbanCard({
+  title = 'Implement Auth Flow',
+  description = 'Set up OAuth with Google and GitHub providers.',
+  priority = 'High Priority',
+  assigneeName = 'Jane Doe',
+  assigneeInitials = 'JD',
+  accentColor = '{{accent_color}}',
+  showAssignee = {{show_assignee}},
+  showDescription = {{show_description}},
+}: KanbanCardProps) {
+  return (
+    <div className="bg-card border border-default p-3">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs px-1.5 py-0.5 border" style={{ borderColor: accentColor, color: accentColor }}>
+          {priority}
+        </span>
+      </div>
+      <h4 className="text-sm font-semibold text-primary">{title}</h4>
+      {showDescription && (
+        <p className="text-xs text-secondary mt-1">{description}</p>
+      )}
+      {showAssignee && (
+        <div className="flex items-center gap-2 mt-3 pt-2 border-t border-default">
+          <div className="w-5 h-5 bg-[#1E222B] border border-default flex items-center justify-center text-[10px] font-bold" style={{ color: accentColor }}>
+            {assigneeInitials}
+          </div>
+          <span className="text-xs text-secondary">{assigneeName}</span>
+        </div>
+      )}
+    </div>
+  );
+}`,
+      },
+    ],
+  },
+
+  {
+    slug: "bento-metrics-grid",
+    name: "Bento Metrics Grid",
+    description: "KPI dashboard with metric cards and sparkline indicators.",
+    category: "bento",
+    tags: ["metrics", "kpi", "dashboard"],
+    bento_size: "2x2",
+    sort_order: 120,
+    customizer_schema: {
+      params: [
+        {
+          key: "accent_color",
+          label: "Accent Color",
+          type: "color_picker",
+          default: "#1D3A8A",
+          palette: ["#1D3A8A", "#A31D1D", "#1D8A4A", "#8A6A1D"],
+        },
+        { key: "show_comparison", label: "Show Comparison", type: "toggle_switch", default: true },
+        {
+          key: "card_count",
+          label: "Card Count",
+          type: "range_slider",
+          default: 4,
+          min: 2,
+          max: 6,
+          step: 1,
+        },
+      ],
+    },
+    variants: [
+      {
+        language: "html",
+        display_order: 1,
+        code_template: `<div class="grid grid-cols-2 gap-2 p-2">
+  <div class="bg-card border border-default p-3">
+    <p class="text-xs text-muted">Total Revenue</p>
+    <p class="text-xl font-bold text-primary mt-1">$45,230</p>
+    {{#if show_comparison}}<p class="text-xs mt-1" style="color: {{accent_color}};">↑ 12.5% vs last month</p>{{/if}}
+  </div>
+  <div class="bg-card border border-default p-3">
+    <p class="text-xs text-muted">Active Users</p>
+    <p class="text-xl font-bold text-primary mt-1">1,482</p>
+    {{#if show_comparison}}<p class="text-xs mt-1" style="color: {{accent_color}};">↑ 8.3% vs last month</p>{{/if}}
+  </div>
+  <div class="bg-card border border-default p-3">
+    <p class="text-xs text-muted">Conversion Rate</p>
+    <p class="text-xl font-bold text-primary mt-1">3.2%</p>
+    {{#if show_comparison}}<p class="text-xs mt-1 text-[#9A9BA0]">→ 0% vs last month</p>{{/if}}
+  </div>
+  <div class="bg-card border border-default p-3">
+    <p class="text-xs text-muted">Avg. Session</p>
+    <p class="text-xl font-bold text-primary mt-1">4m 32s</p>
+    {{#if show_comparison}}<p class="text-xs mt-1" style="color: {{accent_color}};">↑ 2.1% vs last month</p>{{/if}}
+  </div>
+</div>`,
+      },
+      {
+        language: "react-tsx",
+        display_order: 2,
+        code_template: `interface Metric {
+  label: string;
+  value: string;
+  trend?: string;
+  trendDir?: 'up' | 'down' | 'flat';
+}
+
+interface MetricsGridProps {
+  metrics?: Metric[];
+  accentColor?: string;
+  showComparison?: boolean;
+}
+
+export function BentoMetricsGrid({
+  metrics = [
+    { label: 'Total Revenue', value: '$45,230', trend: '12.5%', trendDir: 'up' },
+    { label: 'Active Users', value: '1,482', trend: '8.3%', trendDir: 'up' },
+    { label: 'Conversion Rate', value: '3.2%', trend: '0%', trendDir: 'flat' },
+    { label: 'Avg. Session', value: '4m 32s', trend: '2.1%', trendDir: 'up' },
+  ],
+  accentColor = '{{accent_color}}',
+  showComparison = {{show_comparison}},
+}: MetricsGridProps) {
+  const trendStyle = (dir?: string) =>
+    dir === 'flat' ? { color: '#9A9BA0' } : { color: accentColor };
+
+  return (
+    <div className="grid grid-cols-2 gap-2 p-2">
+      {metrics.map((m, i) => (
+        <div key={i} className="bg-card border border-default p-3">
+          <p className="text-xs text-muted">{m.label}</p>
+          <p className="text-xl font-bold text-primary mt-1">{m.value}</p>
+          {showComparison && m.trend && (
+            <p className="text-xs mt-1" style={trendStyle(m.trendDir)}>
+              {m.trendDir === 'up' ? '↑' : m.trendDir === 'down' ? '↓' : '→'} {m.trend}
+            </p>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}`,
+      },
+    ],
+  },
+
+  {
+    slug: "bento-activity-feed",
+    name: "Bento Activity Feed",
+    description: "Timeline-style activity feed with avatar, action, and timestamp.",
+    category: "bento",
+    tags: ["activity", "feed", "timeline"],
+    bento_size: "2x1",
+    sort_order: 125,
+    customizer_schema: {
+      params: [
+        {
+          key: "accent_color",
+          label: "Accent Color",
+          type: "color_picker",
+          default: "#0D9488",
+          palette: ["#0D9488", "#A31D1D", "#1D3A8A", "#8A6A1D"],
+        },
+        {
+          key: "show_timeline_dot",
+          label: "Show Timeline Dot",
+          type: "toggle_switch",
+          default: true,
+        },
+        {
+          key: "max_items",
+          label: "Max Items",
+          type: "range_slider",
+          default: 4,
+          min: 2,
+          max: 8,
+          step: 1,
+        },
+      ],
+    },
+    variants: [
+      {
+        language: "html",
+        display_order: 1,
+        code_template: `<div class="p-2 space-y-0">
+  <div class="flex gap-3 py-2 border-b border-default">
+    {{#if show_timeline_dot}}
+    <div class="w-2 h-2 mt-1.5 flex-shrink-0" style="background: {{accent_color}};"></div>
+    {{/if}}
+    <div class="flex-1 min-w-0">
+      <p class="text-xs text-primary"><span class="font-semibold">John</span> pushed to <span class="font-semibold">main</span></p>
+      <p class="text-[11px] text-muted mt-0.5">2 minutes ago</p>
+    </div>
+  </div>
+  <div class="flex gap-3 py-2 border-b border-default">
+    {{#if show_timeline_dot}}
+    <div class="w-2 h-2 mt-1.5 flex-shrink-0" style="background: {{accent_color}};"></div>
+    {{/if}}
+    <div class="flex-1 min-w-0">
+      <p class="text-xs text-primary"><span class="font-semibold">Sarah</span> opened a pull request</p>
+      <p class="text-[11px] text-muted mt-0.5">15 minutes ago</p>
+    </div>
+  </div>
+  <div class="flex gap-3 py-2 border-b border-default">
+    {{#if show_timeline_dot}}
+    <div class="w-2 h-2 mt-1.5 flex-shrink-0" style="background: {{accent_color}};"></div>
+    {{/if}}
+    <div class="flex-1 min-w-0">
+      <p class="text-xs text-primary"><span class="font-semibold">Alex</span> deployed to production</p>
+      <p class="text-[11px] text-muted mt-0.5">1 hour ago</p>
+    </div>
+  </div>
+</div>`,
+      },
+      {
+        language: "react-tsx",
+        display_order: 2,
+        code_template: `interface ActivityItem {
+  actor: string;
+  action: string;
+  target?: string;
+  timestamp: string;
+}
+
+interface ActivityFeedProps {
+  items?: ActivityItem[];
+  accentColor?: string;
+  showTimelineDot?: boolean;
+}
+
+export function BentoActivityFeed({
+  items = [
+    { actor: 'John', action: 'pushed to', target: 'main', timestamp: '2 minutes ago' },
+    { actor: 'Sarah', action: 'opened a pull request', timestamp: '15 minutes ago' },
+    { actor: 'Alex', action: 'deployed to production', timestamp: '1 hour ago' },
+  ],
+  accentColor = '{{accent_color}}',
+  showTimelineDot = {{show_timeline_dot}},
+}: ActivityFeedProps) {
+  return (
+    <div className="p-2 space-y-0">
+      {items.map((item, i) => (
+        <div key={i} className="flex gap-3 py-2 border-b border-default">
+          {showTimelineDot && (
+            <div className="w-2 h-2 mt-1.5 flex-shrink-0" style={{ background: accentColor }} />
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-primary">
+              <span className="font-semibold">{item.actor}</span> {item.action}
+              {item.target && <span className="font-semibold"> {item.target}</span>}
+            </p>
+            <p className="text-[11px] text-muted mt-0.5">{item.timestamp}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}`,
+      },
+    ],
+  },
+
+  {
+    slug: "bento-settings-card",
+    name: "Bento Settings Card",
+    description: "Settings panel with grouped options, labels, and toggle controls.",
+    category: "bento",
+    tags: ["settings", "form", "toggle"],
+    bento_size: "2x1",
+    sort_order: 130,
+    customizer_schema: {
+      params: [
+        {
+          key: "accent_color",
+          label: "Accent Color",
+          type: "color_picker",
+          default: "#A31D1D",
+          palette: ["#A31D1D", "#1D3A8A", "#1D8A4A", "#0D9488"],
+        },
+        {
+          key: "show_descriptions",
+          label: "Show Descriptions",
+          type: "toggle_switch",
+          default: true,
+        },
+        { key: "show_icons", label: "Show Section Icons", type: "toggle_switch", default: true },
+      ],
+    },
+    variants: [
+      {
+        language: "html",
+        display_order: 1,
+        code_template: `<div class="bg-card border border-default p-3 space-y-3">
+  <div class="flex items-center justify-between pb-2 border-b border-default">
+    <div class="flex items-center gap-2">
+      <span style="color: {{accent_color}};">&#9881;</span>
+      <span class="text-sm font-semibold text-primary">General</span>
+    </div>
+  </div>
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-xs text-primary">Dark Mode</p>
+      {{#if show_descriptions}}<p class="text-[11px] text-muted">Toggle dark theme</p>{{/if}}
+    </div>
+    <div class="w-8 h-4 border border-default relative cursor-pointer" style="background: {{accent_color}};">
+      <div class="w-3 h-3 bg-primary absolute right-0.5 top-0.5"></div>
+    </div>
+  </div>
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-xs text-primary">Notifications</p>
+      {{#if show_descriptions}}<p class="text-[11px] text-muted">Email and push alerts</p>{{/if}}
+    </div>
+    <div class="w-8 h-4 border border-default relative cursor-pointer">
+      <div class="w-3 h-3 bg-secondary absolute left-0.5 top-0.5"></div>
+    </div>
+  </div>
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-xs text-primary">Auto-save</p>
+      {{#if show_descriptions}}<p class="text-[11px] text-muted">Save changes automatically</p>{{/if}}
+    </div>
+    <div class="w-8 h-4 border border-default relative cursor-pointer" style="background: {{accent_color}};">
+      <div class="w-3 h-3 bg-primary absolute right-0.5 top-0.5"></div>
+    </div>
+  </div>
+</div>`,
+      },
+      {
+        language: "react-tsx",
+        display_order: 2,
+        code_template: `interface SettingRow {
+  label: string;
+  description?: string;
+  enabled: boolean;
+}
+
+interface SettingsCardProps {
+  sections?: { title: string; icon?: string; settings: SettingRow[] }[];
+  accentColor?: string;
+  showDescriptions?: boolean;
+  showIcons?: boolean;
+}
+
+export function BentoSettingsCard({
+  sections = [
+    {
+      title: 'General',
+      icon: '\\u2699',
+      settings: [
+        { label: 'Dark Mode', description: 'Toggle dark theme', enabled: true },
+        { label: 'Notifications', description: 'Email and push alerts', enabled: false },
+        { label: 'Auto-save', description: 'Save changes automatically', enabled: true },
+      ],
+    },
+  ],
+  accentColor = '{{accent_color}}',
+  showDescriptions = {{show_descriptions}},
+  showIcons = {{show_icons}},
+}: SettingsCardProps) {
+  return (
+    <div className="bg-card border border-default p-3 space-y-3">
+      {sections.map((section, i) => (
+        <div key={i}>
+          <div className="flex items-center gap-2 pb-2 border-b border-default">
+            {showIcons && section.icon && (
+              <span style={{ color: accentColor }}>{section.icon}</span>
+            )}
+            <span className="text-sm font-semibold text-primary">{section.title}</span>
+          </div>
+          <div className="mt-2 space-y-3">
+            {section.settings.map((setting, j) => (
+              <div key={j} className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-primary">{setting.label}</p>
+                  {showDescriptions && setting.description && (
+                    <p className="text-[11px] text-muted">{setting.description}</p>
+                  )}
+                </div>
+                <div
+                  className="w-8 h-4 border border-default relative cursor-pointer"
+                  style={setting.enabled ? { background: accentColor } : undefined}
+                >
+                  <div
+                    className="w-3 h-3 bg-primary absolute"
+                    style={setting.enabled ? { right: '0.5px', top: '0.5px' } : { left: '0.5px', top: '0.5px' }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}`,
+      },
+    ],
+  },
 ];
 
 async function seed() {

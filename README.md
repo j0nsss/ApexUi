@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ApexUI — Design Vault
 
-## Getting Started
+An open-source, interactive UI Component Library and Design Vault. Browse, customize, and copy production-grade UI components built with Next.js 14, Supabase, and Tailwind CSS.
 
-First, run the development server:
+## Features
+
+- **Flat Design Gallery** — Bento-grid layout with category filtering and ISR
+- **3-Panel Detail View** — Live preview canvas, syntax-highlighted code editor (Monaco), and interactive customizer
+- **Interactive Customizer** — Adjust colors, sizes, toggles, and more with instant preview + code updates
+- **Mobile View** — Responsive catalog and bottom-sheet code viewer
+- **Live Data Toggle** — Generate random table/chart data on the fly
+- **Command+K Search** — Global full-text search across all components
+- **Admin Dashboard** — Auth-gated analytics with charts and real-time copy feed
+- **Copy Analytics** — Every copy event tracked for usage insights
+
+## Tech Stack
+
+| Layer       | Technology                                                  |
+| ----------- | ----------------------------------------------------------- |
+| Framework   | [Next.js 14](https://nextjs.org/) (App Router)              |
+| Styling     | [Tailwind CSS 3](https://tailwindcss.com/)                  |
+| Database    | [Supabase](https://supabase.com/) (PostgreSQL)              |
+| Animation   | [Framer Motion 11](https://www.framer.com/motion/)          |
+| Code Editor | [Monaco Editor](https://microsoft.github.io/monaco-editor/) |
+| Charts      | [Recharts](https://recharts.org/)                           |
+| Fonts       | Inter, Space Grotesk, JetBrains Mono                        |
+
+## Quick Start
+
+```bash
+git clone https://github.com/j0nsss/ApexUi.git
+cd ApexUi
+npm install
+```
+
+### Environment Variables
+
+Copy `.env.example` to `.env.local` and fill in your Supabase credentials:
+
+```bash
+cp .env.example .env.local
+```
+
+Required variables:
+
+| Variable                        | Description               |
+| ------------------------------- | ------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Supabase project URL      |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/public key  |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Supabase service_role key |
+
+### Database Setup
+
+Run the migration and seed script:
+
+```bash
+# Apply schema
+npx supabase db push
+
+# Seed 20+ components
+npx tsx scripts/seed.ts
+```
+
+### Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Tests
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm test              # Unit tests (Vitest)
+npm run test:e2e      # E2E tests (Playwright)
+```
 
-## Learn More
+## Deployment
 
-To learn more about Next.js, take a look at the following resources:
+Deploy to Vercel with the following environment variables set:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Edge Functions require manual deployment:
 
-## Deploy on Vercel
+```bash
+npx supabase functions deploy track-copy --project-ref xajzpnqxvepcnehrwtnw
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+app/
+  page.tsx              # Gallery (ISR)
+  components/[slug]/    # Detail view
+  admin/                # Admin dashboard
+  api/                  # API routes
+components/ui/          # Shared UI primitives
+lib/                    # Utilities, types, store
+hooks/                  # React hooks
+supabase/migrations/    # DB schema
+scripts/seed.ts         # Seed data
+```
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
