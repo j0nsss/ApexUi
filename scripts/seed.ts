@@ -332,7 +332,7 @@ export function CompactTable({
   {
     slug: "line-chart",
     name: "Line Chart",
-    description: "Smooth line chart with gradient fill and interactive tooltips.",
+    description: "Flat line chart with interactive tooltips and toggleable data points.",
     category: "chart",
     tags: ["trend", "time-series", "analytics"],
     bento_size: "2x2",
@@ -1517,7 +1517,7 @@ export function OrderHistoryTable({
   {
     slug: "area-chart",
     name: "Area Chart",
-    description: "Smooth area chart with gradient fill for trend visualization.",
+    description: "Flat area chart with solid low-opacity fill for trend visualization.",
     category: "chart",
     tags: ["area", "trend", "gradient"],
     bento_size: "2x1",
@@ -1553,19 +1553,13 @@ export function OrderHistoryTable({
         language: "html",
         display_order: 1,
         code_template: `<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto">
-  <defs>
-    <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="{{accent_color}}" stop-opacity="0.25"/>
-      <stop offset="100%" stop-color="{{accent_color}}" stop-opacity="0.02"/>
-    </linearGradient>
-  </defs>
   {{#each points}}
   <polyline points="{{#each ../points}}{{this.x}},{{this.y}} {{/each}}"
     fill="none" stroke="{{../accent_color}}" stroke-width="{{../line_width}}"
     stroke-linejoin="{{#if ../smooth_curve}}round{{else}}miter{{/if}}"
     stroke-linecap="{{#if ../smooth_curve}}round{{else}}butt{{/if}}" />
   <path d="M{{#each ../points}}{{this.x}},{{this.y}} L{{/each}}{{#last ../points}}{{this.x}},200 L{{#first ../points}}{{this.x}},200 Z{{/first}}{{/last}}"
-    fill="url(#areaGrad)" />
+    fill="{{../accent_color}}" fill-opacity="0.12" />
   {{/each}}
   {{#if show_points}}
   {{#each points}}
@@ -1597,16 +1591,10 @@ export function AreaChart({
 
   return (
     <svg viewBox="0 0 400 200" className="w-full h-auto">
-      <defs>
-        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={accentColor} stopOpacity={0.25} />
-          <stop offset="100%" stopColor={accentColor} stopOpacity={0.02} />
-        </linearGradient>
-      </defs>
       <path d={pathD} fill="none" stroke={accentColor} strokeWidth={lineWidth}
         strokeLinejoin={smoothCurve ? 'round' : 'miter'}
         strokeLinecap={smoothCurve ? 'round' : 'butt'} />
-      <path d={areaD} fill="url(#areaGrad)" />
+      <path d={areaD} fill={accentColor} fillOpacity={0.12} />
       {showPoints && data.map((d, i) => (
         <circle key={i} cx={d.x} cy={d.y} r={3} fill={accentColor} stroke="#16181D" strokeWidth={1.5} />
       ))}
@@ -2424,6 +2412,132 @@ async function seed() {
   }
 
   console.log("\nSeed complete!");
+
+  await seedAnalyticsEvents();
+}
+
+async function seedAnalyticsEvents() {
+  console.log("\nSeeding 30 days of synthetic analytics events...");
+
+  const { data: seededComponents, error } = await supabase
+    .from("components")
+    .select("id, slug, category")
+    .eq("is_published", true);
+
+  if (error || !seededComponents || seededComponents.length === 0) {
+    console.error("✗ Failed to fetch components for analytics seed:", error?.message);
+    return;
+  }
+
+  const languages = ["html", "react-tsx", "tailwind"];
+  const events: {
+    event_type: string;
+    component_id: string | null;
+    component_slug: string | null;
+    language: string | null;
+    route: string | null;
+    search_query?: string | null;
+    session_id: string;
+    created_at: string;
+  }[] = [];
+
+  const now = new Date();
+  const sessionIds = Array.from({ length: 40 }, () => crypto.randomUUID());
+
+  // 30 days of copy events + page views
+  for (let dayOffset = 29; dayOffset >= 0; dayOffset--) {
+    const day = new Date(now);
+    day.setDate(now.getDate() - dayOffset);
+
+    // Weekends get ~40% less traffic
+    const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+    const dailyCopies = Math.floor((isWeekend ? 12 : 30) + Math.random() * 20);
+    const dailyViews = Math.floor((isWeekend ? 40 : 90) + Math.random() * 60);
+
+    for (let i = 0; i < dailyCopies; i++) {
+      const comp = seededComponents[Math.floor(Math.random() * seededComponents.length)];
+      const hour = 8 + Math.floor(Math.random() * 12);
+      const minute = Math.floor(Math.random() * 60);
+      const ts = new Date(day);
+      ts.setHours(hour, minute, Math.floor(Math.random() * 60), 0);
+      events.push({
+        event_type: "copy",
+        component_id: comp.id,
+        component_slug: comp.slug,
+        language: languages[Math.floor(Math.random() * languages.length)],
+        route: `/components/${comp.slug}`,
+        session_id: sessionIds[Math.floor(Math.random() * sessionIds.length)],
+        created_at: ts.toISOString(),
+      });
+    }
+
+    for (let i = 0; i < dailyViews; i++) {
+      const route =
+        Math.random() < 0.6
+          ? "/"
+          : `/components/${seededComponents[Math.floor(Math.random() * seededComponents.length)].slug}`;
+      const hour = 8 + Math.floor(Math.random() * 12);
+      const minute = Math.floor(Math.random() * 60);
+      const ts = new Date(day);
+      ts.setHours(hour, minute, Math.floor(Math.random() * 60), 0);
+      events.push({
+        event_type: "page_view",
+        component_id: null,
+        component_slug: null,
+        language: null,
+        route,
+        session_id: sessionIds[Math.floor(Math.random() * sessionIds.length)],
+        created_at: ts.toISOString(),
+      });
+    }
+  }
+
+  // A few search events for realism
+  const queries = ["table", "chart", "nav", "bento", "dashboard"];
+  for (let i = 0; i < 50; i++) {
+    const day = new Date(now);
+    day.setDate(now.getDate() - Math.floor(Math.random() * 30));
+    events.push({
+      event_type: "search",
+      component_id: null,
+      component_slug: null,
+      language: null,
+      route: "/",
+      search_query: queries[Math.floor(Math.random() * queries.length)],
+      session_id: sessionIds[Math.floor(Math.random() * sessionIds.length)],
+      created_at: day.toISOString(),
+    });
+  }
+
+  // Insert in batches of 500
+  const BATCH = 500;
+  for (let i = 0; i < events.length; i += BATCH) {
+    const batch = events.slice(i, i + BATCH);
+    const { error: insertErr } = await supabase.from("analytics_events").insert(batch);
+    if (insertErr) {
+      console.error(`✗ Failed to insert analytics batch: ${insertErr.message}`);
+      return;
+    }
+  }
+
+  // Update denormalized copy_count on components
+  const { data: copyCounts } = await supabase
+    .from("analytics_events")
+    .select("component_slug")
+    .eq("event_type", "copy");
+
+  if (copyCounts) {
+    const counts: Record<string, number> = {};
+    for (const row of copyCounts) {
+      if (row.component_slug) counts[row.component_slug] = (counts[row.component_slug] ?? 0) + 1;
+    }
+    for (const comp of seededComponents) {
+      const c = counts[comp.slug] ?? 0;
+      await supabase.from("components").update({ copy_count: c }).eq("slug", comp.slug);
+    }
+  }
+
+  console.log(`✓ Seeded ${events.length} synthetic analytics events (30 days)`);
 }
 
 seed().catch(console.error);
