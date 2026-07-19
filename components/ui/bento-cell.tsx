@@ -3,16 +3,7 @@
 import { useRouter } from "next/navigation";
 import { Tag } from "./tag";
 import { Badge } from "./badge";
-
-interface ComponentMeta {
-  id: string;
-  slug: string;
-  name: string;
-  category: string;
-  bento_size: "1x1" | "2x1" | "2x2";
-  copy_count: number;
-  description?: string;
-}
+import type { ComponentMeta } from "@/lib/types";
 
 interface BentoCellProps {
   component: ComponentMeta;
@@ -95,4 +86,3 @@ const BentoCell = ({ component }: BentoCellProps) => {
 };
 
 export { BentoCell };
-export type { ComponentMeta };

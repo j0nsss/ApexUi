@@ -1,6 +1,6 @@
 import { GalleryClient } from "./gallery-client";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
-import type { ComponentMeta } from "@/components/ui/bento-cell";
+import type { ComponentMeta } from "@/lib/types";
 
 export const revalidate = 60;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { ComponentFull } from "@/lib/types";
 
 type ViewportMode = "desktop" | "tablet" | "mobile";
@@ -19,21 +19,11 @@ const viewportLabels: Record<ViewportMode, string> = {
 
 interface LivePreviewCanvasProps {
   component: ComponentFull;
+  disableViewportToggles?: boolean;
 }
 
-function LivePreviewCanvas({ component }: LivePreviewCanvasProps) {
+function LivePreviewCanvas({ component, disableViewportToggles }: LivePreviewCanvasProps) {
   const [mode, setMode] = useState<ViewportMode>("desktop");
-
-  useEffect(() => {
-    fetch("/api/analytics/pageview", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        route: `/components/${component.slug}`,
-        session_id: crypto.randomUUID(),
-      }),
-    });
-  }, [component.slug]);
 
   return (
     <div className="flex flex-col h-full">
@@ -41,11 +31,13 @@ function LivePreviewCanvas({ component }: LivePreviewCanvasProps) {
         {(Object.keys(viewportWidths) as ViewportMode[]).map((v) => (
           <button
             key={v}
-            onClick={() => setMode(v)}
+            onClick={() => !disableViewportToggles && setMode(v)}
             className={`px-3 py-1 text-label border border-solid transition-colors duration-75 ${
-              mode === v
-                ? "border-accent text-accent"
-                : "border-default text-secondary hover:text-primary hover:border-accent"
+              disableViewportToggles
+                ? "border-default text-muted opacity-40 cursor-default"
+                : mode === v
+                  ? "border-accent text-accent"
+                  : "border-default text-secondary hover:text-primary hover:border-accent"
             }`}
           >
             {viewportLabels[v]}

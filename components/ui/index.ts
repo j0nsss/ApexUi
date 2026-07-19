@@ -26,4 +26,4 @@ export type { LoadingSpinnerProps } from "./loading-spinner";
 export { BentoGrid } from "./bento-grid";
 export type { BentoGridProps } from "./bento-grid";
 export { BentoCell } from "./bento-cell";
-export type { ComponentMeta } from "./bento-cell";
+export type { ComponentMeta } from "@/lib/types";

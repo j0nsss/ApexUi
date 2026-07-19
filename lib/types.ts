@@ -16,6 +16,8 @@ export type CustomizerSchema = {
 
 export type RandomDataSchema = Record<string, unknown>;
 
+export type BentoSize = "1x1" | "2x1" | "2x2";
+
 export type ComponentMeta = {
   id: string;
   slug: string;
@@ -23,7 +25,7 @@ export type ComponentMeta = {
   description: string | null;
   category: string;
   tags: string[];
-  bento_size: string;
+  bento_size: BentoSize;
   copy_count: number;
 };
 

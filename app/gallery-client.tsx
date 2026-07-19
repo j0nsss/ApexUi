@@ -4,13 +4,16 @@ import { useState, useEffect } from "react";
 import { BentoGrid } from "@/components/ui/bento-grid";
 import { BentoCell } from "@/components/ui/bento-cell";
 import { GalleryFilters } from "./gallery-filters";
-import type { ComponentMeta } from "@/components/ui/bento-cell";
+import { MobileCatalogCard } from "./components/mobile-catalog-card";
+import { useIsMobile } from "@/hooks/use-media-query";
+import type { ComponentMeta } from "@/lib/types";
 
 interface GalleryClientProps {
   components: ComponentMeta[];
 }
 
 function GalleryClient({ components }: GalleryClientProps) {
+  const isMobile = useIsMobile();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,11 +41,19 @@ function GalleryClient({ components }: GalleryClientProps) {
         onCategoryChange={setActiveCategory}
       />
       <main>
-        <BentoGrid>
-          {filtered.map((component) => (
-            <BentoCell key={component.id} component={component} />
-          ))}
-        </BentoGrid>
+        {isMobile ? (
+          <div className="border-b border-default">
+            {filtered.map((component) => (
+              <MobileCatalogCard key={component.id} component={component} />
+            ))}
+          </div>
+        ) : (
+          <BentoGrid>
+            {filtered.map((component) => (
+              <BentoCell key={component.id} component={component} />
+            ))}
+          </BentoGrid>
+        )}
       </main>
     </>
   );
