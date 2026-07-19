@@ -2,9 +2,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
-import { KpiCard } from "./kpi-card";
-import { StepLineChart, HorizontalBarChart, GroupedBarChart, DonutChart } from "./admin-charts";
-import { RealTimeCopyFeed } from "./realtime-feed";
+import { AdminClient } from "./admin-client";
 
 export const dynamic = "force-dynamic";
 
@@ -30,14 +28,11 @@ async function validateSession(): Promise<boolean> {
   return !!user;
 }
 
-async function getKpis() {
+async function getInitialData() {
   const supabase = getSupabaseAdmin();
 
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
   const [
     { count: copyCount },
@@ -45,7 +40,7 @@ async function getKpis() {
     { data: topComponent },
     { data: dailyCopyData },
     { data: topComponentsData },
-    { data: pageviewRouteData },
+    { data: routeData },
     { data: categoryData },
   ] = await Promise.all([
     supabase
@@ -75,10 +70,10 @@ async function getKpis() {
       .from("analytics_events")
       .select("route")
       .eq("event_type", "page_view")
-      .gte("created_at", sevenDaysAgo.toISOString()),
+      .gte("created_at", thirtyDaysAgo.toISOString()),
     supabase
       .from("analytics_events")
-      .select("component_slug, language")
+      .select("component_slug")
       .eq("event_type", "copy")
       .gte("created_at", thirtyDaysAgo.toISOString()),
   ]);
@@ -93,7 +88,7 @@ async function getKpis() {
     .map(([event_date, copy_count]) => ({ event_date, copy_count }));
 
   const routeMap = new Map<string, number>();
-  for (const row of pageviewRouteData ?? []) {
+  for (const row of routeData ?? []) {
     const route = row.route ?? "/unknown";
     routeMap.set(route, (routeMap.get(route) ?? 0) + 1);
   }
@@ -131,31 +126,14 @@ export default async function AdminDashboardPage() {
     redirect("/admin/login");
   }
 
-  const kpis = await getKpis();
+  const initialData = await getInitialData();
 
   return (
     <div className="min-h-screen bg-base">
       <header className="border-b border-default px-6 py-5">
         <h1 className="text-h1">Admin Dashboard</h1>
       </header>
-      <div className="p-6 space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <KpiCard label="Total Copy Events (30d)" value={kpis.copyCount} />
-          <KpiCard label="Total Page Views (30d)" value={kpis.pageviewCount} />
-          <KpiCard label="Most Copied Component" value={kpis.topComponent} />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <StepLineChart data={kpis.dailyChartData} title="Copy Events Over Time" />
-          <HorizontalBarChart data={kpis.topComponentsData} title="Top Components by Copy Count" />
-          <GroupedBarChart data={kpis.routeChartData} title="Page Views by Route (7d)" />
-          <DonutChart data={kpis.categoryChartData} title="Category Distribution" />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <RealTimeCopyFeed />
-        </div>
-      </div>
+      <AdminClient initialData={initialData} />
     </div>
   );
 }
