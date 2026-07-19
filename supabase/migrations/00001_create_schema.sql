@@ -4,23 +4,15 @@
 
 -- ============================================================
 -- Clean up previous run (safe for re-execution)
+-- CASCADE drops dependent objects (policies, triggers, indexes).
 -- ============================================================
 
 DROP VIEW IF EXISTS vw_daily_copy_events;
 DROP VIEW IF EXISTS vw_top_components;
-DROP POLICY IF EXISTS "Public can read published components" ON components;
-DROP POLICY IF EXISTS "Admins can do all on components" ON components;
-DROP POLICY IF EXISTS "Public can read code variants" ON code_variants;
-DROP POLICY IF EXISTS "Admins can do all on code_variants" ON code_variants;
-DROP POLICY IF EXISTS "Admins can read analytics" ON analytics_events;
-DROP POLICY IF EXISTS "Admins only" ON admin_users;
-DROP TRIGGER IF EXISTS trg_components_search_vector ON components;
-DROP TRIGGER IF EXISTS trg_components_updated_at ON components;
-DROP TRIGGER IF EXISTS trg_code_variants_updated_at ON code_variants;
-DROP TABLE IF EXISTS admin_users;
-DROP TABLE IF EXISTS analytics_events;
-DROP TABLE IF EXISTS code_variants;
-DROP TABLE IF EXISTS components;
+DROP TABLE IF EXISTS admin_users CASCADE;
+DROP TABLE IF EXISTS analytics_events CASCADE;
+DROP TABLE IF EXISTS code_variants CASCADE;
+DROP TABLE IF EXISTS components CASCADE;
 DROP FUNCTION IF EXISTS update_components_search_vector();
 DROP FUNCTION IF EXISTS update_updated_at_column();
 
