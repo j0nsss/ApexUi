@@ -11,9 +11,16 @@ import { sheetVariants, sheetTransition } from "@/lib/motion-variants";
 interface MobileDetailLayoutProps {
   component: ComponentFull;
   codeVariants: CodeVariant[];
+  dataLoading?: boolean;
+  onGenerateRandomData?: () => void;
 }
 
-function MobileDetailLayout({ component, codeVariants }: MobileDetailLayoutProps) {
+function MobileDetailLayout({
+  component,
+  codeVariants,
+  dataLoading,
+  onGenerateRandomData,
+}: MobileDetailLayoutProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [activeLang, setActiveLang] = useState(codeVariants[0]?.language ?? "html");
@@ -51,7 +58,12 @@ function MobileDetailLayout({ component, codeVariants }: MobileDetailLayoutProps
       </header>
 
       <div className="flex-1 overflow-auto">
-        <LivePreviewCanvas component={component} disableViewportToggles />
+        <LivePreviewCanvas
+          component={component}
+          disableViewportToggles
+          dataLoading={dataLoading}
+          onGenerateRandomData={onGenerateRandomData}
+        />
       </div>
 
       <div className="sticky bottom-0 border-t border-default bg-card flex">

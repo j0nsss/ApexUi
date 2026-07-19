@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import type { ComponentFull, CodeVariant } from "@/lib/types";
 import { DetailLayout } from "./detail-layout";
 import { CategoryNavigator } from "./category-navigator";
@@ -11,6 +11,7 @@ import { MobileDetailLayout } from "./mobile-detail-layout";
 import { usePanelStore } from "@/lib/store";
 import { useCustomizerStore } from "@/lib/store";
 import { useIsMobile } from "@/hooks/use-media-query";
+import { useRandomData } from "@/hooks/use-random-data";
 import { interpolate } from "@/lib/interpolate";
 
 interface NavComponent {
@@ -29,6 +30,8 @@ function DetailShell({ component, codeVariants, allComponents }: DetailShellProp
   const isMobile = useIsMobile();
   const { panelCTab, setPanelCTab } = usePanelStore();
   const params = useCustomizerStore((s) => s.params);
+  const setParam = useCustomizerStore((s) => s.setParam);
+  const { loading, generate } = useRandomData();
 
   useEffect(() => {
     fetch("/api/analytics/pageview", {
@@ -41,13 +44,27 @@ function DetailShell({ component, codeVariants, allComponents }: DetailShellProp
     });
   }, [component.slug]);
 
+  const handleGenerateRandomData = useCallback(() => {
+    if (!component.random_data_schema) return;
+    generate(component.random_data_schema, component.category, (json) => {
+      setParam("__random_data", json);
+    });
+  }, [component.random_data_schema, component.category, generate, setParam]);
+
   const interpolatedVariants = codeVariants.map((v) => ({
     ...v,
     code_template: interpolate(v.code_template, params),
   }));
 
   if (isMobile) {
-    return <MobileDetailLayout component={component} codeVariants={interpolatedVariants} />;
+    return (
+      <MobileDetailLayout
+        component={component}
+        codeVariants={interpolatedVariants}
+        dataLoading={loading}
+        onGenerateRandomData={handleGenerateRandomData}
+      />
+    );
   }
 
   return (
@@ -65,7 +82,13 @@ function DetailShell({ component, codeVariants, allComponents }: DetailShellProp
 
       <DetailLayout
         panelA={<CategoryNavigator allComponents={allComponents} />}
-        panelB={<LivePreviewCanvas component={component} />}
+        panelB={
+          <LivePreviewCanvas
+            component={component}
+            dataLoading={loading}
+            onGenerateRandomData={handleGenerateRandomData}
+          />
+        }
         panelC={
           <div className="flex flex-col h-full">
             <div className="flex border-b border-default">
