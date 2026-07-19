@@ -1,1 +1,24 @@
-// Shared UI Component Library — barrel export
+export { Button } from "./button";
+export type { ButtonProps } from "./button";
+export { Tag } from "./tag";
+export type { TagProps } from "./tag";
+export { TextInput } from "./text-input";
+export type { TextInputProps } from "./text-input";
+export { Toggle } from "./toggle";
+export type { ToggleProps } from "./toggle";
+export { RangeSlider } from "./range-slider";
+export type { RangeSliderProps } from "./range-slider";
+export { SelectDropdown } from "./select-dropdown";
+export type { SelectDropdownProps } from "./select-dropdown";
+export { ColorPickerSwatch } from "./color-picker-swatch";
+export type { ColorPickerSwatchProps } from "./color-picker-swatch";
+export { FlatTab } from "./flat-tab";
+export type { FlatTabItem, TabGroupProps } from "./flat-tab";
+export { IconButton } from "./icon-button";
+export type { IconButtonProps } from "./icon-button";
+export { Badge } from "./badge";
+export type { BadgeProps } from "./badge";
+export { EmptyState } from "./empty-state";
+export type { EmptyStateProps } from "./empty-state";
+export { LoadingSpinner } from "./loading-spinner";
+export type { LoadingSpinnerProps } from "./loading-spinner";
