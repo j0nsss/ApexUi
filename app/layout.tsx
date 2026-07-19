@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { MotionProvider } from "@/lib/motion-context";
+import { CommandProvider } from "./command-provider";
 import "./globals.css";
 
 const inter = Inter({
@@ -37,7 +38,9 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}
       >
-        <MotionProvider>{children}</MotionProvider>
+        <MotionProvider>
+          <CommandProvider>{children}</CommandProvider>
+        </MotionProvider>
       </body>
     </html>
   );
