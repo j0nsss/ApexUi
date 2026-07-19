@@ -22,3 +22,8 @@ export { EmptyState } from "./empty-state";
 export type { EmptyStateProps } from "./empty-state";
 export { LoadingSpinner } from "./loading-spinner";
 export type { LoadingSpinnerProps } from "./loading-spinner";
+
+export { BentoGrid } from "./bento-grid";
+export type { BentoGridProps } from "./bento-grid";
+export { BentoCell } from "./bento-cell";
+export type { ComponentMeta } from "./bento-cell";
